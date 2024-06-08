@@ -4,12 +4,17 @@
   "description": "I'm a server!",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "jest"
   },
   "author": "",
   "type": "module",
   "dependencies": {
     "express": "^4.18.3",
+    "express-async-handler": "^1.2.0",
     "mariadb": "^3.2.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }
