@@ -1,4 +1,7 @@
 const asyncHandler = require("express-async-handler");
+const mariadb = require("mariadb");
+
+let db_context = mariadb.createPool("");
 
 exports.laborCostComparison = asyncHandler(async (req, res) => {
     // required param
@@ -12,6 +15,7 @@ exports.laborCostComparison = asyncHandler(async (req, res) => {
     let worker_id_list = _sanitizeNumberList(req.query.workerIdList);
     let location_id_list = _sanitizeNumberList(req.query.locationIdList);
 
+    db_context = req._db_context;
     // TODO: lookup data utilizing the cleaned params
 
     // TODO: return the result set as JSON

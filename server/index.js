@@ -31,7 +31,10 @@ async function main() {
     res.send("Hello!");
   });
 
-  app.use("/reports", reportsRouter)
+  app.use('/reports', function (req, res, next) {
+    req._db_context = db;
+    next();
+  }, reportsRouter);
 
   app.listen(port, "0.0.0.0", () => {
     console.info(`App listening on ${port}.`);

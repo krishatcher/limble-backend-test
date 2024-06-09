@@ -6,6 +6,7 @@ CREATE TABLE locations (
 CREATE TABLE tasks (
   id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   description VARCHAR(100) NOT NULL,
+  is_complete BOOLEAN NOT NULL DEFAULT 0,
 
   location_id INT(11) NOT NULL,
 
