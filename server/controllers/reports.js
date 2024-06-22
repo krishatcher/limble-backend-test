@@ -5,21 +5,32 @@ let db_context = mariadb.createPool("");
 
 exports.laborCostComparison = asyncHandler(async (req, res) => {
     // required param
-    let cost_comparison = _sanitizeCostComparison(req.query.costComparisonBy);
+    let cost_comparison = this._sanitizeCostComparison(req.query.costComparisonBy);
     if (!cost_comparison.found) {
-        res.status(400).send("Parameter 'costComparisonBy' required.")
+        res.status(400).send("Parameter 'costComparisonBy' required.");
+        return
     }
 
     // optional params
-    let completion_status = _sanitizeCompletionStatus(req.query.completionStatus);
-    let worker_id_list = _sanitizeNumberList(req.query.workerIdList);
-    let location_id_list = _sanitizeNumberList(req.query.locationIdList);
+    let completion_status = this._sanitizeCompletionStatus(req.query.completionStatus);
+    let worker_id_list = this._sanitizeNumberList(req.query.workerIdList);
+    let location_id_list = this._sanitizeNumberList(req.query.locationIdList);
 
     db_context = req._db_context;
-    // TODO: lookup data utilizing the cleaned params
+    let result = [];
 
-    // TODO: return the result set as JSON
-    res.send("NOT IMPLEMENTED: Labor Cost Comparison");
+    if (cost_comparison === "worker") {
+        // By worker: the total cost of that worker across all tasks and locations
+
+        result = getCostsByWorker(completion_status, worker_id_list.clean_list.join(","), location_id_list.clean_list.join(","));
+    } else {
+        // `cost_comparison` value has been sanitized, we know it's only one of two possible values
+        // By location: the total labor cost for tasks tied to a given location
+
+        result = getCostsByLocation(completion_status, worker_id_list.clean_list.join(","), location_id_list.clean_list.join(","));
+    }
+
+    res.status(200).send(JSON.stringify(result));
 });
 
 exports._sanitizeCostComparison = (dirty_value) => {
@@ -90,3 +101,31 @@ const completionFilter = Object.freeze({
     incomplete: Symbol("incomplete"),
     both:       Symbol("both")
 })
+
+const getCostsByWorker = async function(completion_status, worker_id_list, location_id_list) {
+    const conn = await this._db_context.getConnection();
+    let result = [];
+
+    try {
+        let query_string = "CALL report_total_cost_by_worker @completion_status='" + completion_status + "', @worker_id_list='" + worker_id_list + "', @location_id_list='" + location_id_list + "';";
+        result = await conn.query(query_string);
+    } finally {
+        await conn.end();
+    }
+
+    return result;
+}
+
+const getCostsByLocation = async function(completion_status, worker_id_list, location_id_list) {
+    const conn = await this._db_context.getConnection();
+    let result = [];
+
+    try {
+        let query_string = "CALL report_total_cost_by_location @completion_status='" + completion_status + "', @worker_id_list='" + worker_id_list + "', @location_id_list='" + location_id_list + "';";
+        result = await conn.query(query_string);
+    } finally {
+        await conn.end();
+    }
+
+    return result;
+}
