@@ -1,9 +1,9 @@
-const asyncHandler = require("express-async-handler");
-const mariadb = require("mariadb");
+import expressAsyncHandler from "express-async-handler";
 
-let db_context = mariadb.createPool("");
+let db_context = null;
 
-exports.laborCostComparison = asyncHandler(async (req, res) => {
+const laborCostComparison = expressAsyncHandler(async (req, res) => {
+    console.info("hit laborCostComparison method");
     // required param
     let cost_comparison = this._sanitizeCostComparison(req.query.costComparisonBy);
     if (!cost_comparison.found) {
@@ -33,7 +33,7 @@ exports.laborCostComparison = asyncHandler(async (req, res) => {
     res.status(200).send(JSON.stringify(result));
 });
 
-exports._sanitizeCostComparison = (dirty_value) => {
+const _sanitizeCostComparison = (dirty_value) => {
     let found = false;
     let clean_value = "";
 
@@ -48,7 +48,7 @@ exports._sanitizeCostComparison = (dirty_value) => {
     return {clean_value, found};
 }
 
-exports._sanitizeCompletionStatus = (dirty_value) => {
+const _sanitizeCompletionStatus = (dirty_value) => {
     // optional parameter, default is "both" so we'll set that here
     let clean_value = completionFilter.both;
 
@@ -61,7 +61,7 @@ exports._sanitizeCompletionStatus = (dirty_value) => {
     return clean_value;
 }
 
-exports._sanitizeNumberList = (dirty_value) => {
+const _sanitizeNumberList = (dirty_value) => {
     let found = false;
     let clean_list = [];
 
@@ -82,7 +82,7 @@ exports._sanitizeNumberList = (dirty_value) => {
     return {clean_list, found};
 }
 
-exports._sanitizeNumber = (dirty_value) => {
+const _sanitizeNumber = (dirty_value) => {
     let found = false;
     let clean_value = 0;
 
@@ -129,3 +129,11 @@ const getCostsByLocation = async function(completion_status, worker_id_list, loc
 
     return result;
 }
+
+export default {
+    laborCostComparison,
+    _sanitizeCompletionStatus,
+    _sanitizeCostComparison,
+    _sanitizeNumber,
+    _sanitizeNumberList
+};

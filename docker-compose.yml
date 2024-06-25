@@ -1,18 +1,19 @@
 services:
   db:
-    image: mariadb:11.3.2
+    image: mariadb:11.4.2
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 10
     ports:
-      - "0.0.0.0:3307:3306"
+      - "3307:3306"
     environment:
       MARIADB_USER: limble-test
       MARIADB_PASSWORD: limble-test-password
       MARIADB_DATABASE: limble
       MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 1
+      HAVE_SSL: NO
 
   migrate:
     image: mariadb:11.3.2

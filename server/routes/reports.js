@@ -1,8 +1,9 @@
-const express = require('express')
+import express from "express";
+import reports from "../controllers/reports.js";
+
 const router = express.Router()
 
-const reports_controller = require("../controllers/reports.js")
+router.get('/reports/laborCostComparison', async (req, res, next) =>  reports.laborCostComparison);
 
-router.get('/reports/laborCostComparison', reports_controller.laborCostComparison);
 
-module.exports = router
+export default router;

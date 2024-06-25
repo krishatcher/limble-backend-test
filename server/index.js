@@ -1,7 +1,6 @@
 import express from "express";
 import * as mariadb from "mariadb";
-
-const reportsRouter = require("./routes/reports.js")
+import reports from "./routes/reports.js";
 
 const app = express();
 const port = 3000;
@@ -28,13 +27,15 @@ async function main() {
   await connect();
 
   app.get("/", (req, res) => {
+    console.info("Hello!");
     res.send("Hello!");
   });
 
   app.use('/reports', function (req, res, next) {
+    console.info("sending to Reports controller");
     req._db_context = db;
     next();
-  }, reportsRouter);
+  }, reports);
 
   app.listen(port, "0.0.0.0", () => {
     console.info(`App listening on ${port}.`);
