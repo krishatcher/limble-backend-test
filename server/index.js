@@ -32,7 +32,15 @@ async function main() {
   });
 
   app.get('/reports/laborCostComparison', async (req, res) =>  {
-    await reportController.laborCostComparison(req, res, db);
+    await reportController.laborCostComparison(req, res, db).then((results) => {
+
+      if (results.success) {
+        res.status(200).send(results.body);
+      } else {
+        // the only error we're handling right now is a missing required param
+        res.status(400).send(results.body);
+      }
+    });
   });
 
   app.listen(port, "0.0.0.0", () => {

@@ -2,13 +2,12 @@ import expressAsyncHandler from "express-async-handler";
 
 let _db_context = null;
 
-const laborCostComparison = expressAsyncHandler(async (req, res, db) => {
+const laborCostComparison = (async (req, res, db) => {
     // required param
     let cost_comparison = _sanitizeCostComparison(req.query.costComparisonBy);
     if (!cost_comparison.found) {
         console.info("missing required param: 'costComparisonBy'");
-        res.status(400).send("Parameter 'costComparisonBy' required.");
-        return
+        return {success: false, body: "Parameter 'costComparisonBy' required."};
     }
 
     // optional params
@@ -24,15 +23,15 @@ const laborCostComparison = expressAsyncHandler(async (req, res, db) => {
     if (cost_comparison.clean_value === "worker") {
         // By worker: the total cost of that worker across all tasks and locations
 
-        result = getCostsByWorker(completion_status, workerList, locationList);
+        result = await getCostsByWorker(completion_status, workerList, locationList);
     } else {
         // `cost_comparison` value has been sanitized, we know it's only one of two possible values
         // By location: the total labor cost for tasks tied to a given location
 
-        result = getCostsByLocation(completion_status, workerList, locationList);
+        result = await getCostsByLocation(completion_status, workerList, locationList);
     }
 
-    res.status(200).send(JSON.stringify(result));
+    return {success: true, body: JSON.stringify(result)};
 });
 
 const _sanitizeCostComparison = (dirty_value) => {
@@ -113,8 +112,24 @@ const getCostsByWorker = async function(completion_status, worker_id_list, locat
     let result = [];
 
     try {
-        let query_string = "CALL report_total_cost_by_worker @completion_status='" + completion_status + "', @worker_id_list='" + worker_id_list + "', @location_id_list='" + location_id_list + "';";
-        result = await conn.query(query_string);
+        await conn.execute(`set @completion_status = '${completion_status}';`).then(async () => {
+            await conn.execute(`set @worker_id_list = '${worker_id_list}';`).then(async () => {
+                await conn.execute(`set @location_id_list = '${location_id_list}';`).then(async () => {
+                    let returnValues = await conn.execute("call report_total_cost_by_worker(@completion_status, @worker_id_list, @location_id_list);");
+                    result = returnValues[0] ?? null;
+                    console.log("result found");
+                });
+            });
+        });
+
+        /*
+        let query = `set @completion_status = '${completion_status}';`;
+        query += `set @worker_id_list = '${worker_id_list}';`;
+        query += `set @location_id_list = '${location_id_list}';`;
+        query += `call report_total_cost_by_worker(@completion_status, @worker_id_list, @location_id_list);`;
+
+        result = await conn.execute(query);
+        */
     } finally {
         await conn.end();
     }
