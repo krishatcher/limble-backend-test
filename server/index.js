@@ -1,6 +1,6 @@
 import express from "express";
 import * as mariadb from "mariadb";
-import reports from "./routes/reports.js";
+import reportController from "./controllers/reports.js";
 
 const app = express();
 const port = 3000;
@@ -31,11 +31,9 @@ async function main() {
     res.send("Hello!");
   });
 
-  app.use('/reports', function (req, res, next) {
-    console.info("sending to Reports controller");
-    req._db_context = db;
-    next();
-  }, reports);
+  app.get('/reports/laborCostComparison', async (req, res) =>  {
+    await reportController.laborCostComparison(req, res, db);
+  });
 
   app.listen(port, "0.0.0.0", () => {
     console.info(`App listening on ${port}.`);

@@ -1,33 +1,35 @@
 import expressAsyncHandler from "express-async-handler";
 
-let db_context = null;
+let _db_context = null;
 
-const laborCostComparison = expressAsyncHandler(async (req, res) => {
-    console.info("hit laborCostComparison method");
+const laborCostComparison = expressAsyncHandler(async (req, res, db) => {
     // required param
-    let cost_comparison = this._sanitizeCostComparison(req.query.costComparisonBy);
+    let cost_comparison = _sanitizeCostComparison(req.query.costComparisonBy);
     if (!cost_comparison.found) {
+        console.info("missing required param: 'costComparisonBy'");
         res.status(400).send("Parameter 'costComparisonBy' required.");
         return
     }
 
     // optional params
-    let completion_status = this._sanitizeCompletionStatus(req.query.completionStatus);
-    let worker_id_list = this._sanitizeNumberList(req.query.workerIdList);
-    let location_id_list = this._sanitizeNumberList(req.query.locationIdList);
+    let completion_status = _sanitizeCompletionStatus(req.query.completionStatus);
+    let worker_id_list = _sanitizeNumberList(req.query.workerIdList);
+    let location_id_list = _sanitizeNumberList(req.query.locationIdList);
 
-    db_context = req._db_context;
+    _db_context = db;
     let result = [];
+    let workerList = worker_id_list.found ? worker_id_list.clean_list.join(",") : "all";
+    let locationList = location_id_list.found ? location_id_list.clean_list.join(",") : "all";
 
-    if (cost_comparison === "worker") {
+    if (cost_comparison.clean_value === "worker") {
         // By worker: the total cost of that worker across all tasks and locations
 
-        result = getCostsByWorker(completion_status, worker_id_list.clean_list.join(","), location_id_list.clean_list.join(","));
+        result = getCostsByWorker(completion_status, workerList, locationList);
     } else {
         // `cost_comparison` value has been sanitized, we know it's only one of two possible values
         // By location: the total labor cost for tasks tied to a given location
 
-        result = getCostsByLocation(completion_status, worker_id_list.clean_list.join(","), location_id_list.clean_list.join(","));
+        result = getCostsByLocation(completion_status, workerList, locationList);
     }
 
     res.status(200).send(JSON.stringify(result));
@@ -37,12 +39,14 @@ const _sanitizeCostComparison = (dirty_value) => {
     let found = false;
     let clean_value = "";
 
-    if (dirty_value.toLowerCase() === "worker") {
-        clean_value = "worker";
-        found = true;
-    } else if (dirty_value.toLowerCase() === "location") {
-        clean_value = "location";
-        found = true;
+    if (dirty_value !== undefined && dirty_value.length > 0) {
+        if (dirty_value.toLowerCase() === "worker") {
+            clean_value = "worker";
+            found = true;
+        } else if (dirty_value.toLowerCase() === "location") {
+            clean_value = "location";
+            found = true;
+        }
     }
 
     return {clean_value, found};
@@ -52,10 +56,12 @@ const _sanitizeCompletionStatus = (dirty_value) => {
     // optional parameter, default is "both" so we'll set that here
     let clean_value = completionFilter.both;
 
-    if (dirty_value.toLowerCase() === "complete") {
-        clean_value = completionFilter.complete;
-    } else if (dirty_value.toLowerCase() === "incomplete") {
-        clean_value = completionFilter.incomplete;
+    if (dirty_value !== undefined && dirty_value.length > 0) {
+        if (dirty_value.toLowerCase() === "complete") {
+            clean_value = completionFilter.complete;
+        } else if (dirty_value.toLowerCase() === "incomplete") {
+            clean_value = completionFilter.incomplete;
+        }
     }
 
     return clean_value;
@@ -65,7 +71,7 @@ const _sanitizeNumberList = (dirty_value) => {
     let found = false;
     let clean_list = [];
 
-    if (dirty_value.length > 0 ) {
+    if (dirty_value !== undefined && dirty_value.length > 0 ) {
         let dirty_list = dirty_value.split(",");
         if (dirty_list.length > 0) {
             for (let i = 0; i < dirty_list.length; i++) {
@@ -97,13 +103,13 @@ const _sanitizeNumber = (dirty_value) => {
 }
 
 const completionFilter = Object.freeze({
-    complete:   Symbol("complete"),
-    incomplete: Symbol("incomplete"),
-    both:       Symbol("both")
+    complete:   "complete",
+    incomplete: "incomplete",
+    both:       "both"
 })
 
 const getCostsByWorker = async function(completion_status, worker_id_list, location_id_list) {
-    const conn = await this._db_context.getConnection();
+    const conn = await _db_context.getConnection();
     let result = [];
 
     try {
@@ -117,7 +123,7 @@ const getCostsByWorker = async function(completion_status, worker_id_list, locat
 }
 
 const getCostsByLocation = async function(completion_status, worker_id_list, location_id_list) {
-    const conn = await this._db_context.getConnection();
+    const conn = await _db_context.getConnection();
     let result = [];
 
     try {

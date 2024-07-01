@@ -14,8 +14,8 @@ FROM
         JOIN tasks AS t ON lt.task_id = t.id
 WHERE
     (completion_status = 'both' OR (completion_status = 'complete' AND t.is_complete = 1) OR (completion_status = 'incomplete' AND t.is_complete = 0))
-  AND (NULLIF(worker_id_list, '') is null OR (FIND_IN_SET(w.id, worker_id_list) > 0))
-  AND (NULLIF(location_id_list, '') is null OR (FIND_IN_SET(t.location_id, location_id_list) > 0))
+  AND (NULLIF(worker_id_list, 'all') is null OR (FIND_IN_SET(w.id, worker_id_list) > 0))
+  AND (NULLIF(location_id_list, 'all') is null OR (FIND_IN_SET(t.location_id, location_id_list) > 0))
 GROUP BY
     w.id,
     name;
@@ -38,8 +38,8 @@ FROM
         JOIN workers as w on lt.worker_id = w.id
 WHERE
     (completion_status = 'both' OR (completion_status = 'complete' AND t.is_complete = 1) OR (completion_status = 'incomplete' AND t.is_complete = 0))
-  AND (NULLIF(worker_id_list, '') is null OR (FIND_IN_SET(w.id, worker_id_list) > 0))
-  AND (NULLIF(location_id_list, '') is null OR (FIND_IN_SET(t.location_id, location_id_list) > 0))
+  AND (NULLIF(worker_id_list, 'all') is null OR (FIND_IN_SET(w.id, worker_id_list) > 0))
+  AND (NULLIF(location_id_list, 'all') is null OR (FIND_IN_SET(t.location_id, location_id_list) > 0))
 GROUP BY
     l.id,
     l.name;
