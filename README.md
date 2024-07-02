@@ -11,7 +11,7 @@ The backend server uses Node.js, but you don't need to have that installed on yo
 the dependencies by running:
 
 ```bash
-docker compose run server npm i
+docker compose run --service-ports server
 ```
 
 ## Database
