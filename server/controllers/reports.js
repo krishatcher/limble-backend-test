@@ -1,5 +1,3 @@
-import expressAsyncHandler from "express-async-handler";
-
 let _db_context = null;
 
 const laborCostComparison = (async (req, res, db) => {
@@ -142,8 +140,15 @@ const getCostsByLocation = async function(completion_status, worker_id_list, loc
     let result = [];
 
     try {
-        let query_string = "CALL report_total_cost_by_location @completion_status='" + completion_status + "', @worker_id_list='" + worker_id_list + "', @location_id_list='" + location_id_list + "';";
-        result = await conn.query(query_string);
+        await conn.execute(`set @completion_status = '${completion_status}';`).then(async () => {
+            await conn.execute(`set @worker_id_list = '${worker_id_list}';`).then(async () => {
+                await conn.execute(`set @location_id_list = '${location_id_list}';`).then(async () => {
+                    let returnValues = await conn.execute("call report_total_cost_by_location(@completion_status, @worker_id_list, @location_id_list);");
+                    result = returnValues[0] ?? null;
+                    console.log("result found");
+                });
+            });
+        });
     } finally {
         await conn.end();
     }
