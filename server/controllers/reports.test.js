@@ -1,4 +1,4 @@
-const sum = require("./reports.js");
+import sum from './reports.js';
 
 test('A bad value passed to \'sanitizeNumber\' will come back not found', () => {
     let result = sum._sanitizeNumber("not a number");
@@ -58,22 +58,22 @@ test('The value \'ga0898sgw\' passed to \'sanitizeCostComparison\' will come bac
 
 test('The value \'Complete\' passed to \'sanitizeCompletionStatus\' will come back standardized', () => {
     let result = sum._sanitizeCompletionStatus("Complete");
-    let expected = Symbol("complete");
+    let expected = "complete";
 
-    expect(result.toString()).toBe(expected.toString());
+    expect(result.toString()).toBe(expected);
 })
 
 test('The value \'INCOMPLETE\' passed to \'sanitizeCompletionStatus\' will come back standardized', () => {
     let result = sum._sanitizeCompletionStatus("INCOMPLETE");
-    let expected = Symbol("incomplete");
+    let expected = "incomplete";
 
-    expect(result.toString()).toBe(expected.toString());
+    expect(result.toString()).toBe(expected);
 })
 
 test('The value \'wetyyx64342ghg\' passed to \'sanitizeCompletionStatus\' will come back standardized', () => {
     let result = sum._sanitizeCompletionStatus("wetyyx64342ghg");
-    let expected = Symbol("both");
+    let expected = "both";
 
-    expect(result.toString()).toBe(expected.toString());
+    expect(result.toString()).toBe(expected);
 })
 

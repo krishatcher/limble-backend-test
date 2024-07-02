@@ -72,7 +72,7 @@ const _sanitizeNumberList = (dirty_value) => {
         let dirty_list = dirty_value.split(",");
         if (dirty_list.length > 0) {
             for (let i = 0; i < dirty_list.length; i++) {
-                let result = this._sanitizeNumber(dirty_list[i]);
+                let result = _sanitizeNumber(dirty_list[i]);
 
                 if (result.found) {
                     found = result.found;

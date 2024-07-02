@@ -15,6 +15,7 @@
     "mariadb": "^3.3.1"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.24.7",
     "jest": "^29.7.0"
   }
 }
