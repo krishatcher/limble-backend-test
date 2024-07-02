@@ -119,15 +119,6 @@ const getCostsByWorker = async function(completion_status, worker_id_list, locat
                 });
             });
         });
-
-        /*
-        let query = `set @completion_status = '${completion_status}';`;
-        query += `set @worker_id_list = '${worker_id_list}';`;
-        query += `set @location_id_list = '${location_id_list}';`;
-        query += `call report_total_cost_by_worker(@completion_status, @worker_id_list, @location_id_list);`;
-
-        result = await conn.execute(query);
-        */
     } finally {
         await conn.end();
     }
